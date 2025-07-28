@@ -23,8 +23,17 @@ export interface Comment {
 export const api = {
   getPosts: async (): Promise<Post[]> => {
     try {
+      console.log('API_BASE_URL:', API_BASE_URL);
       console.log('Fetching posts from:', `${API_BASE_URL}/posts`);
-      const response = await fetch(`${API_BASE_URL}/posts`);
+      
+      const response = await fetch(`${API_BASE_URL}/posts`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+      
       console.log('Response status:', response.status);
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
@@ -39,75 +48,124 @@ export const api = {
       return data;
     } catch (error) {
       console.error('Error in getPosts:', error);
+      console.error('API_BASE_URL was:', API_BASE_URL);
       throw error;
     }
   },
 
   getPost: async (id: number): Promise<Post> => {
-    const response = await fetch(`${API_BASE_URL}/posts/${id}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch post');
+    try {
+      const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch post');
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error in getPost:', error);
+      throw error;
     }
-    return response.json();
   },
 
   createPost: async (post: Omit<Post, 'id' | 'created_at' | 'updated_at' | 'comments'>): Promise<Post> => {
-    const response = await fetch(`${API_BASE_URL}/posts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(post),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to create post');
+    try {
+      const response = await fetch(`${API_BASE_URL}/posts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(post),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Create post error:', errorText);
+        throw new Error('Failed to create post');
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error in createPost:', error);
+      throw error;
     }
-    return response.json();
   },
 
   updatePost: async (id: number, post: Partial<Post>): Promise<Post> => {
-    const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(post),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to update post');
+    try {
+      const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(post),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update post');
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error in updatePost:', error);
+      throw error;
     }
-    return response.json();
   },
 
   deletePost: async (id: number): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      throw new Error('Failed to delete post');
+    try {
+      const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete post');
+      }
+    } catch (error) {
+      console.error('Error in deletePost:', error);
+      throw error;
     }
   },
 
   createComment: async (postId: number, comment: Omit<Comment, 'id' | 'post_id' | 'created_at' | 'updated_at'>): Promise<Comment> => {
-    const response = await fetch(`${API_BASE_URL}/posts/${postId}/comments`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(comment),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to create comment');
+    try {
+      const response = await fetch(`${API_BASE_URL}/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(comment),
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Create comment error:', errorText);
+        throw new Error('Failed to create comment');
+      }
+      return response.json();
+    } catch (error) {
+      console.error('Error in createComment:', error);
+      throw error;
     }
-    return response.json();
   },
 
   deleteComment: async (id: number): Promise<void> => {
-    const response = await fetch(`${API_BASE_URL}/comments/${id}`, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      throw new Error('Failed to delete comment');
+    try {
+      const response = await fetch(`${API_BASE_URL}/comments/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete comment');
+      }
+    } catch (error) {
+      console.error('Error in deleteComment:', error);
+      throw error;
     }
   },
 };

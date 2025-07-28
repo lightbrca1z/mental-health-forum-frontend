@@ -4,6 +4,7 @@ import React from 'react';
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Post, api } from "@/lib/api";
+import DebugInfo from "@/components/DebugInfo";
 
 type Category = Post['category'];
 
@@ -16,11 +17,15 @@ export default function Home() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
+        console.log('Starting to fetch posts...');
         const data = await api.getPosts();
+        console.log('Posts fetched successfully:', data);
         setPosts(data);
+        setError(null);
       } catch (err) {
-        setError('投稿の取得に失敗しました');
-        console.error(err);
+        console.error('Error fetching posts:', err);
+        const errorMessage = err instanceof Error ? err.message : '投稿の取得に失敗しました';
+        setError(`投稿の取得に失敗しました: ${errorMessage}`);
       } finally {
         setIsLoading(false);
       }
@@ -39,6 +44,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center">読み込み中...</div>
         </div>
+        <DebugInfo />
       </main>
     );
   }
@@ -47,8 +53,20 @@ export default function Home() {
     return (
       <main className="min-h-screen bg-background p-8">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center text-red-500">{error}</div>
+          <div className="text-center text-red-500 mb-4">{error}</div>
+          <div className="text-center text-gray-600 mb-4">
+            API URL: {process.env.NEXT_PUBLIC_API_URL || '設定されていません'}
+          </div>
+          <div className="text-center">
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              再試行
+            </button>
+          </div>
         </div>
+        <DebugInfo />
       </main>
     );
   }
@@ -92,7 +110,7 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {filteredPosts.map((post) => (
             <Link key={post.id} href={`/posts/${post.id}`}>
               <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
@@ -115,6 +133,7 @@ export default function Home() {
           ))}
         </div>
       </div>
+      <DebugInfo />
     </main>
   );
 } 
