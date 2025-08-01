@@ -1,0 +1,11 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# Host
+Host: https://mental-health-forum-frontend-production.up.railway.app
+
+# Sitemaps
+Sitemap: https://mental-health-forum-frontend-production.up.railway.app/sitemap.xml
