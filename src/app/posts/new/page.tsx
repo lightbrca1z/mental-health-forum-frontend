@@ -12,27 +12,44 @@ export default function NewPostPage() {
   const [author, setAuthor] = useState("");
   const [category, setCategory] = useState<"転職" | "病気" | "薬" | "生活" | "雑談">("病気");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string>("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim() || !author.trim()) return;
+    if (!title.trim() || !content.trim() || !author.trim()) {
+      setDebugInfo("すべての項目を入力してください");
+      return;
+    }
 
     setIsSubmitting(true);
+    setDebugInfo("投稿処理を開始します...");
 
-    const postData = {
-      title: title.trim(),
-      content: content.trim(),
-      author: author.trim(),
-      category,
-    };
-    
-    console.log('Submitting post data:', postData);
-    
-    const result = await api.createPost(postData);
-    console.log('Post created successfully:', result);
-    
-    router.push("/");
-    setIsSubmitting(false);
+    try {
+      const postData = {
+        title: title.trim(),
+        content: content.trim(),
+        author: author.trim(),
+        category,
+      };
+      
+      setDebugInfo(`投稿データを送信中: ${JSON.stringify(postData)}`);
+      console.log('Submitting post data:', postData);
+      
+      const result = await api.createPost(postData);
+      console.log('Post created successfully:', result);
+      setDebugInfo("投稿が成功しました！トップページにリダイレクトします...");
+      
+      // 少し待ってからリダイレクト
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error creating post:', error);
+      setDebugInfo(`投稿エラー: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -46,6 +63,13 @@ export default function NewPostPage() {
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h1 className="text-2xl font-bold mb-6">新規投稿</h1>
+
+          {debugInfo && (
+            <div className="bg-blue-50 text-blue-700 p-4 rounded-md mb-6">
+              <div className="font-medium">デバッグ情報</div>
+              <div className="text-sm mt-1">{debugInfo}</div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
