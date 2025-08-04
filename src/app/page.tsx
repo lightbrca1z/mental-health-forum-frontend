@@ -31,58 +31,6 @@ export default function Home() {
     ? posts
     : posts.filter(post => post.category === selectedCategory);
 
-  if (isLoading) {
-    return (
-      <main className="min-h-screen bg-background p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center">読み込み中...</div>
-        </div>
-        <DebugInfo />
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="min-h-screen bg-background p-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center text-red-500 mb-4">{error}</div>
-          <div className="text-center text-gray-600 mb-4">
-            API URL: {process.env.NEXT_PUBLIC_API_URL || '設定されていません'}
-          </div>
-          <div className="text-center text-gray-500 mb-6 text-sm">
-            <p>このエラーは通常、以下の原因で発生します：</p>
-            <ul className="mt-2 space-y-1">
-              <li>• バックエンドサーバーが停止している</li>
-              <li>• データベースのマイグレーションが実行されていない</li>
-              <li>• 環境変数の設定が間違っている</li>
-              <li>• ネットワーク接続の問題</li>
-            </ul>
-            <p className="mt-4">詳細な情報は右下の「デバッグ情報」ボタンで確認できます。</p>
-          </div>
-          <div className="text-center space-x-4">
-            <button 
-              onClick={() => window.location.reload()} 
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              再試行
-            </button>
-            <button 
-              onClick={() => {
-                const debugButton = document.querySelector('[class*="bg-gray-800"]') as HTMLButtonElement;
-                if (debugButton) debugButton.click();
-              }}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            >
-              デバッグ情報を表示
-            </button>
-          </div>
-        </div>
-        <DebugInfo />
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-background p-8">
       <div className="max-w-4xl mx-auto">
