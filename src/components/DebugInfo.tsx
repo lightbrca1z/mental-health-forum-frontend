@@ -4,12 +4,28 @@ import { useState } from 'react';
 
 export default function DebugInfo() {
   const [isVisible, setIsVisible] = useState(false);
+  const [apiTestResult, setApiTestResult] = useState<string>('');
 
   const debugInfo = {
     'NEXT_PUBLIC_API_URL': process.env.NEXT_PUBLIC_API_URL || '設定されていません',
     'NODE_ENV': process.env.NODE_ENV || '設定されていません',
     'Current URL': typeof window !== 'undefined' ? window.location.href : 'SSR',
     'User Agent': typeof window !== 'undefined' ? window.navigator.userAgent : 'SSR',
+  };
+
+  const testApiConnection = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://mental-health-forum-backend-production.up.railway.app/api';
+      const response = await fetch(`${apiUrl}/debug`);
+      if (response.ok) {
+        const data = await response.json();
+        setApiTestResult(`✅ API接続成功: ${JSON.stringify(data, null, 2)}`);
+      } else {
+        setApiTestResult(`❌ API接続失敗: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      setApiTestResult(`❌ API接続エラー: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   return (
@@ -32,15 +48,31 @@ export default function DebugInfo() {
               </div>
             ))}
           </div>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(JSON.stringify(debugInfo, null, 2));
-              alert('デバッグ情報をクリップボードにコピーしました');
-            }}
-            className="mt-2 bg-blue-500 text-white px-2 py-1 rounded text-xs"
-          >
-            コピー
-          </button>
+          
+          <div className="mt-4">
+            <button
+              onClick={testApiConnection}
+              className="bg-blue-500 text-white px-2 py-1 rounded text-xs mr-2"
+            >
+              API接続テスト
+            </button>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(JSON.stringify(debugInfo, null, 2));
+                alert('デバッグ情報をクリップボードにコピーしました');
+              }}
+              className="bg-green-500 text-white px-2 py-1 rounded text-xs"
+            >
+              コピー
+            </button>
+          </div>
+          
+          {apiTestResult && (
+            <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+              <div className="font-medium mb-1">API接続テスト結果:</div>
+              <pre className="whitespace-pre-wrap text-xs">{apiTestResult}</pre>
+            </div>
+          )}
         </div>
       )}
     </div>

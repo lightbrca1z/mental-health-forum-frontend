@@ -5,7 +5,7 @@ const nextConfig = {
     outputFileTracingRoot: undefined,
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://mental-health-forum-backend-production.up.railway.app/api',
   },
   // 本番環境用の最適化
   compress: true,
