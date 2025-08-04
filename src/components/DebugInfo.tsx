@@ -5,6 +5,7 @@ import { useState } from 'react';
 export default function DebugInfo() {
   const [isVisible, setIsVisible] = useState(false);
   const [apiTestResult, setApiTestResult] = useState<string>('');
+  const [isTesting, setIsTesting] = useState(false);
 
   const debugInfo = {
     'NEXT_PUBLIC_API_URL': process.env.NEXT_PUBLIC_API_URL || '設定されていません',
@@ -14,17 +15,44 @@ export default function DebugInfo() {
   };
 
   const testApiConnection = async () => {
+    setIsTesting(true);
+    setApiTestResult('');
+    
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://mental-health-forum-backend-production.up.railway.app/api';
-      const response = await fetch(`${apiUrl}/debug`);
-      if (response.ok) {
-        const data = await response.json();
-        setApiTestResult(`✅ API接続成功: ${JSON.stringify(data, null, 2)}`);
+      
+      // まずデバッグエンドポイントをテスト
+      console.log('Testing debug endpoint...');
+      const debugResponse = await fetch(`${apiUrl}/debug`);
+      console.log('Debug response status:', debugResponse.status);
+      
+      if (debugResponse.ok) {
+        const debugData = await debugResponse.json();
+        setApiTestResult(`✅ デバッグエンドポイント接続成功:\n${JSON.stringify(debugData, null, 2)}`);
       } else {
-        setApiTestResult(`❌ API接続失敗: ${response.status} ${response.statusText}`);
+        const errorText = await debugResponse.text();
+        setApiTestResult(`❌ デバッグエンドポイント接続失敗: ${debugResponse.status} ${debugResponse.statusText}\n${errorText}`);
+        return;
       }
+      
+      // 次に投稿エンドポイントをテスト
+      console.log('Testing posts endpoint...');
+      const postsResponse = await fetch(`${apiUrl}/posts`);
+      console.log('Posts response status:', postsResponse.status);
+      
+      if (postsResponse.ok) {
+        const postsData = await postsResponse.json();
+        setApiTestResult(prev => prev + `\n\n✅ 投稿エンドポイント接続成功:\n投稿数: ${postsData.length}`);
+      } else {
+        const errorText = await postsResponse.text();
+        setApiTestResult(prev => prev + `\n\n❌ 投稿エンドポイント接続失敗: ${postsResponse.status} ${postsResponse.statusText}\n${errorText}`);
+      }
+      
     } catch (error) {
+      console.error('API connection test error:', error);
       setApiTestResult(`❌ API接続エラー: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsTesting(false);
     }
   };
 
@@ -52,9 +80,14 @@ export default function DebugInfo() {
           <div className="mt-4">
             <button
               onClick={testApiConnection}
-              className="bg-blue-500 text-white px-2 py-1 rounded text-xs mr-2"
+              disabled={isTesting}
+              className={`px-2 py-1 rounded text-xs mr-2 ${
+                isTesting 
+                  ? 'bg-gray-400 text-white cursor-not-allowed' 
+                  : 'bg-blue-500 text-white hover:bg-blue-600'
+              }`}
             >
-              API接続テスト
+              {isTesting ? 'テスト中...' : 'API接続テスト'}
             </button>
             <button
               onClick={() => {
@@ -68,7 +101,7 @@ export default function DebugInfo() {
           </div>
           
           {apiTestResult && (
-            <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+            <div className="mt-2 p-2 bg-gray-100 rounded text-xs max-h-60 overflow-y-auto">
               <div className="font-medium mb-1">API接続テスト結果:</div>
               <pre className="whitespace-pre-wrap text-xs">{apiTestResult}</pre>
             </div>
