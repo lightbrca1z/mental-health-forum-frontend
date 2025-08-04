@@ -10,31 +10,29 @@ export default function NewPostPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [author, setAuthor] = useState("");
-  const [category, setCategory] = useState<"病気" | "薬" | "生活" | "雑談">("病気");
+  const [category, setCategory] = useState<"転職" | "病気" | "薬" | "生活" | "雑談">("病気");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim() || !author.trim()) return;
 
     setIsSubmitting(true);
-    setError(null);
 
-    try {
-      await api.createPost({
-        title,
-        content,
-        category,
-        author,
-      });
-      router.push("/");
-    } catch (err) {
-      setError('投稿の作成に失敗しました');
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
-    }
+    const postData = {
+      title: title.trim(),
+      content: content.trim(),
+      author: author.trim(),
+      category,
+    };
+    
+    console.log('Submitting post data:', postData);
+    
+    const result = await api.createPost(postData);
+    console.log('Post created successfully:', result);
+    
+    router.push("/");
+    setIsSubmitting(false);
   };
 
   return (
@@ -48,12 +46,6 @@ export default function NewPostPage() {
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h1 className="text-2xl font-bold mb-6">新規投稿</h1>
-
-          {error && (
-            <div className="bg-red-50 text-red-500 p-4 rounded-md mb-6">
-              {error}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>

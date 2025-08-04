@@ -73,6 +73,7 @@ export const api = {
 
   createPost: async (post: Omit<Post, 'id' | 'created_at' | 'updated_at' | 'comments'>): Promise<Post> => {
     try {
+      console.log('Creating post with data:', post);
       const response = await fetch(`${API_BASE_URL}/posts`, {
         method: 'POST',
         headers: {
@@ -81,12 +82,21 @@ export const api = {
         },
         body: JSON.stringify(post),
       });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Create post error:', errorText);
-        throw new Error('Failed to create post');
+        console.error('Create post error response:', errorText);
+        console.error('Response status:', response.status);
+        console.error('Response status text:', response.statusText);
+        throw new Error(`Failed to create post: ${response.status} ${response.statusText} - ${errorText}`);
       }
-      return response.json();
+      
+      const data = await response.json();
+      console.log('Post created successfully:', data);
+      return data;
     } catch (error) {
       console.error('Error in createPost:', error);
       throw error;
