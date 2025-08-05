@@ -75,29 +75,34 @@ export const api = {
     console.log('Creating post with data:', post);
     console.log('API_BASE_URL:', API_BASE_URL);
     
-    const response = await fetch(`${API_BASE_URL}/posts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(post),
-    });
-    
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Create post error response:', errorText);
-      console.error('Response status:', response.status);
-      console.error('Response status text:', response.statusText);
-      throw new Error(`Failed to create post: ${response.status} ${response.statusText} - ${errorText}`);
+    try {
+      const response = await fetch(`${API_BASE_URL}/posts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(post),
+      });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Create post error response:', errorText);
+        console.error('Response status:', response.status);
+        console.error('Response status text:', response.statusText);
+        throw new Error(`Failed to create post: ${response.status} ${response.statusText} - ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Post created successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error in createPost:', error);
+      throw error;
     }
-    
-    const data = await response.json();
-    console.log('Post created successfully:', data);
-    return data;
   },
 
   updatePost: async (id: number, post: Partial<Post>): Promise<Post> => {

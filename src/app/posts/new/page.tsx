@@ -13,15 +13,17 @@ export default function NewPostPage() {
   const [category, setCategory] = useState<"転職" | "病気" | "薬" | "生活" | "雑談">("病気");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>("");
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !content.trim() || !author.trim()) {
-      setDebugInfo("すべての項目を入力してください");
+      setError("すべての項目を入力してください");
       return;
     }
 
     setIsSubmitting(true);
+    setError(null);
     setDebugInfo("投稿処理を開始します...");
 
     try {
@@ -34,6 +36,7 @@ export default function NewPostPage() {
       
       setDebugInfo(`投稿データを送信中: ${JSON.stringify(postData)}`);
       console.log('Submitting post data:', postData);
+      console.log('API URL:', process.env.NEXT_PUBLIC_API_URL);
       
       const result = await api.createPost(postData);
       console.log('Post created successfully:', result);
@@ -46,7 +49,9 @@ export default function NewPostPage() {
       
     } catch (error) {
       console.error('Error creating post:', error);
-      setDebugInfo(`投稿エラー: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setError(`投稿エラー: ${errorMessage}`);
+      setDebugInfo(`エラー詳細: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -63,6 +68,16 @@ export default function NewPostPage() {
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h1 className="text-2xl font-bold mb-6">新規投稿</h1>
+
+          {error && (
+            <div className="bg-red-50 text-red-700 p-4 rounded-md mb-6">
+              <div className="font-medium">エラーが発生しました</div>
+              <div className="text-sm mt-1">{error}</div>
+              <div className="text-xs mt-2 text-red-500">
+                API URL: {process.env.NEXT_PUBLIC_API_URL || '設定されていません'}
+              </div>
+            </div>
+          )}
 
           {debugInfo && (
             <div className="bg-blue-50 text-blue-700 p-4 rounded-md mb-6">
